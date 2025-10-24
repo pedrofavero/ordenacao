@@ -68,16 +68,102 @@ public class Main {
         }
     }
 
+    static void comb(int[] v) {
+        int n = v.length;
+        int gap = n;
+        int trocou = 1;
+        while (gap > 1 || trocou == 1) {
+            gap = (gap * 10) / 13;
+            if (gap < 1) gap = 1;
+            trocou = 0;
+            for (int i = 0; i + gap < n; i++) {
+                comparacoes++;
+                if (v[i] > v[i + gap]) {
+                    trocar(v, i, i + gap);
+                    trocou = 1;
+                }
+            }
+        }
+    }
+
+    static void gnome(int[] v) {
+        int i = 1;
+        int n = v.length;
+        while (i < n) {
+            comparacoes++;
+            if (v[i] >= v[i - 1]) {
+                i++;
+            } else {
+                trocar(v, i, i - 1);
+                i--;
+                if (i == 0) i = 1;
+            }
+        }
+    }
+
+    static void bucket(int[] v) {
+        int n = v.length;
+        if (n == 0) return;
+
+        int min = v[0];
+        int max = v[0];
+        for (int i = 1; i < n; i++) {
+            if (v[i] < min) min = v[i];
+            if (v[i] > max) max = v[i];
+        }
+        if (min == max) return;
+
+        int qtd = 10;
+        int[][] B = new int[qtd][n];
+        int[] tam = new int[qtd];
+        for (int i = 0; i < qtd; i++) tam[i] = 0;
+
+        for (int i = 0; i < n; i++) {
+            int idx = ( (v[i] - min) * (qtd - 1) ) / (max - min);
+            B[idx][tam[idx]] = v[i];
+            tam[idx] = tam[idx] + 1;
+        }
+
+        for (int b = 0; b < qtd; b++) {
+            for (int i = 1; i < tam[b]; i++) {
+                int chave = B[b][i];
+                int j = i - 1;
+                while (j >= 0) {
+                    comparacoes++;
+                    if (B[b][j] > chave) {
+                        B[b][j + 1] = B[b][j];
+                        trocas++;
+                        j--;
+                    } else {
+                        break;
+                    }
+                }
+                B[b][j + 1] = chave;
+            }
+        }
+
+        int k = 0;
+        for (int b = 0; b < qtd; b++) {
+            for (int i = 0; i < tam[b]; i++) {
+                v[k] = B[b][i];
+                k++;
+            }
+        }
+    }
 
     static void executar(String nome, int[] original, int tipo) {
-        int[] v = new int[original.length];
-        for (int i = 0; i < original.length; i++) v[i] = original[i];
+        int[] vetor = new int[original.length];
+        for (int i = 0; i < original.length; i++) vetor[i] = original[i];
 
         zera();
 
-        if (tipo == 1) bubbleFlag(v);
-        if (tipo == 2) selection(v);
-        if (tipo == 3) cocktail(v);
+        if (tipo == 1) bubbleFlag(vetor);
+        if (tipo == 2) selection(vetor);
+        if (tipo == 3) cocktail(vetor);
+        if (tipo == 4) comb(vetor);
+        if (tipo == 5) gnome(vetor);
+        if (tipo == 6) bucket(vetor);
+        
 
         System.out.print(nome + " | comps=" + comparacoes + " trocas=" + trocas + "\n");
     }
@@ -86,9 +172,11 @@ public class Main {
     static void rodar(String titulo, int[] vetor) {
         System.out.println("\n" + titulo );
         executar("BubbleFlag", vetor, 1);
-        executar("Selection",  vetor, 2);
-        executar("Cocktail",   vetor, 3);
-
+        executar("Selection", vetor, 2);
+        executar("Cocktail", vetor, 3);
+        executar("Comb", vetor, 4);
+        executar("Gnome", vetor, 5);
+        executar("Bucket", vetor, 6);
     }
 
     public static void main(String[] args) {
